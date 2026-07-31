@@ -1,0 +1,116 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const TradingVoiceApp());
+}
+
+class TradingVoiceApp extends StatelessWidget {
+  const TradingVoiceApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Trading Voice App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
+      ),
+      home: const VoiceHomeScreen(),
+    );
+  }
+}
+
+class VoiceHomeScreen extends StatefulWidget {
+  const VoiceHomeScreen({super.key});
+
+  @override
+  State<VoiceHomeScreen> createState() => _VoiceHomeScreenState();
+}
+
+class _VoiceHomeScreenState extends State<VoiceHomeScreen> {
+  String _statusText = "Tap the mic and give a command\n(e.g., 'Buy Gold 0.1')";
+  String _lastAction = "None";
+  bool _isListening = false;
+
+  void _simulateVoiceCommand() {
+    setState(() {
+      _isListening = true;
+      _statusText = "Listening for trade command...";
+    });
+
+    // Simulating speech-to-text capture for testing locally
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        _isListening = false;
+        // Example parsed command simulation
+        String simulatedCommand = "Buy Gold 0.1";
+        _processCommand(simulatedCommand);
+      });
+    });
+  }
+
+  void _processCommand(String command) {
+    String lowerCommand = command.toLowerCase();
+    
+    if (lowerCommand.contains("gold")) {
+      if (lowerCommand.contains("buy")) {
+        _lastAction = "EXECUTED: BUY GOLD";
+        _statusText = "Successfully sent BUY order for Gold!";
+      } else if (lowerCommand.contains("sell")) {
+        _lastAction = "EXECUTED: SELL GOLD";
+        _statusText = "Successfully sent SELL order for Gold!";
+      } else {
+        _statusText = "Command recognized 'Gold', but missing BUY or SELL.";
+      }
+    } else {
+      _statusText = "Unknown command: '$command'";
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Voice Controlled Trading'),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.mic, 
+                size: 80, 
+                color: _isListening ? Colors.redAccent : Colors.blueAccent,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                _statusText,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 40),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  "Last Trade Status: $_lastAction",
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _isListening ? null : _simulateVoiceCommand,
+        backgroundColor: _isListening ? Colors.grey : Colors.blueAccent,
+        child: const Icon(Icons.mic),
+      ),
+    );
+  }
+}
