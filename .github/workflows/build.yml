@@ -1,2 +1,48 @@
-- name: Build APK
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.6'
+          cache: true
+
+      - name: Scaffold Project and Inject Code
+        run: |
+          mkdir -p backup
+          if [ -f "main.dart" ]; then cp main.dart backup/; fi
+          if [ -f "pubspec.yaml" ]; then cp pubspec.yaml backup/; fi
+
+          rm -f main.dart pubspec.yaml
+
+          flutter create . --org com.tradingvoice --project-name trading_voice_app --platforms=android
+
+          if [ -f "backup/main.dart" ]; then cp backup/main.dart lib/main.dart; fi
+          if [ -f "backup/pubspec.yaml" ]; then cp backup/pubspec.yaml pubspec.yaml; fi
+
+          flutter pub get
+
+      - name: Build APK
         run: flutter build apk --release --stacktrace
+        
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
