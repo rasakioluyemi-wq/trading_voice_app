@@ -25,23 +25,19 @@ jobs:
 
       - name: Initialize Flutter Project Structure
         run: |
-          # Save user files temporarily
           mkdir -p temp_lib temp_pub
           if [ -f "main.dart" ]; then cp main.dart temp_lib/; fi
           if [ -f "pubspec.yaml" ]; then cp pubspec.yaml temp_pub/; fi
           
-          # Create a fresh standard Flutter project
           flutter create . --org com.tradingvoice --project-name trading_voice_app --platforms=android
           
-          # Restore user files into the proper locations
           if [ -f "temp_lib/main.dart" ]; then cp temp_lib/main.dart lib/; fi
           if [ -f "temp_pub/pubspec.yaml" ]; then cp temp_pub/pubspec.yaml ./; fi
           
-          # Get dependencies
           flutter pub get
 
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-pub
         
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
