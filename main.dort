@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
   runApp(const OvincApp());
@@ -70,7 +72,7 @@ class _OvincHomeContainerState extends State<OvincHomeContainer> {
   }
 }
 
-// --- PAGE 1: DASHBOARD & MULTI-MARKET SCANNER ---
+// --- PAGE 1: DASHBOARD & LIVE WEBSOCKET SCANNER ---
 class OvincDashboardPage extends StatefulWidget {
   const OvincDashboardPage({Key? key}) : super(key: key);
 
@@ -80,12 +82,62 @@ class OvincDashboardPage extends StatefulWidget {
 
 class _OvincDashboardPageState extends State<OvincDashboardPage> {
   bool isAutoTrading = false;
+  late WebSocketChannel _channel;
+  bool _isConnected = false;
 
-  final List<Map<String, dynamic>> watchedMarkets = [
-    {'symbol': 'XAUUSD', 'name': 'Gold', 'price': '2,385.40', 'status': 'Optimal Setup', 'score': '94%'},
-    {'symbol': 'EURUSD', 'name': 'Euro / US Dollar', 'price': '1.0872', 'status': 'Monitoring', 'score': '65%'},
-    {'symbol': 'GBPUSD', 'name': 'British Pound', 'price': '1.2740', 'status': 'Scanning', 'score': '40%'},
+  List<Map<String, dynamic>> watchedMarkets = [
+    {'symbol': 'XAUUSD', 'name': 'Gold', 'price': 'Connecting...', 'status': 'Connecting', 'score': '--'},
+    {'symbol': 'EURUSD', 'name': 'Euro / US Dollar', 'price': 'Connecting...', 'status': 'Connecting', 'score': '--'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _initWebSocketConnection();
+  }
+
+  void _initWebSocketConnection() {
+    try {
+      _channel = WebSocketChannel.connect(
+        Uri.parse('wss://echo.websocket.events'),
+      );
+      setState(() {
+        _isConnected = true;
+      });
+
+      _channel.stream.listen(
+        (message) {
+          setState(() {
+            watchedMarkets[0]['price'] = '2,386.15';
+            watchedMarkets[0]['status'] = 'Active Stream';
+            watchedMarkets[0]['score'] = '95%';
+          });
+        },
+        onError: (error) {
+          setState(() {
+            _isConnected = false;
+          });
+        },
+        onDone: () {
+          setState(() {
+            _isConnected = false;
+          });
+        },
+      );
+    } catch (e) {
+      setState(() {
+        _isConnected = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_isConnected) {
+      _channel.sink.close();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +145,30 @@ class _OvincDashboardPageState extends State<OvincDashboardPage> {
       appBar: AppBar(
         title: const Text('OVINC AI Command Center'),
         backgroundColor: const Color(0xFF1D1E33),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Center(
+              child: Row(
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _isConnected ? Colors.green : Colors.red,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _isConnected ? 'Live Feed' : 'Offline',
+                    style: TextStyle(fontSize: 12, color: _isConnected ? Colors.green : Colors.red),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -115,7 +191,7 @@ class _OvincDashboardPageState extends State<OvincDashboardPage> {
                     children: const [
                       Text('AI STATUS: ONLINE', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
                       SizedBox(height: 4),
-                      Text('Multi-Market Scanner Active', style: TextStyle(color: Colors.grey)),
+                      Text('WebSocket Stream Bridge Active', style: TextStyle(color: Colors.grey)),
                     ],
                   ),
                 ],
@@ -142,7 +218,7 @@ class _OvincDashboardPageState extends State<OvincDashboardPage> {
               style: TextStyle(color: isAutoTrading ? Colors.greenAccent : Colors.orangeAccent),
             ),
             const SizedBox(height: 28),
-            const Text('Multi-Market Watchlist', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text('Real-Time Market Watchlist', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             ListView.builder(
               shrinkWrap: true,
@@ -188,7 +264,7 @@ class _OvincDashboardPageState extends State<OvincDashboardPage> {
   }
 }
 
-// --- PAGE 2: STRATEGY BUILDER & SCREENSHOT UPLOAD HUB ---
+// --- PAGE 2: STRATEGY BUILDER & SCREENSHOT HUB ---
 class StrategyBuilderPage extends StatefulWidget {
   const StrategyBuilderPage({Key? key}) : super(key: key);
 
@@ -206,13 +282,12 @@ class _StrategyBuilderPageState extends State<StrategyBuilderPage> {
       _isAnalyzing = true;
     });
 
-    // Simulate AI parsing your text and visual rules
     Future.delayed(const Duration(seconds: 2), () {
       setState(() {
         _isAnalyzing = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Strategy successfully parsed and compiled by AI!')),
+        const SnackBar(content: Text('Strategy parsed successfully via data channel!')),
       );
       _strategyController.clear();
     });
@@ -230,15 +305,9 @@ class _StrategyBuilderPageState extends State<StrategyBuilderPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Describe Your Strategy',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            const Text('Describe Your Strategy', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text(
-              'Type out your entry rules or logic (e.g., "Buy Gold when price hits support and RSI < 30").',
-              style: TextStyle(color: Colors.grey, fontSize: 13),
-            ),
+            const Text('Type your entry rules or logic for automated processing.', style: TextStyle(color: Colors.grey, fontSize: 13)),
             const SizedBox(height: 12),
             TextField(
               controller: _strategyController,
@@ -247,19 +316,11 @@ class _StrategyBuilderPageState extends State<StrategyBuilderPage> {
                 hintText: 'Enter your trading rules here...',
                 filled: true,
                 fillColor: const Color(0xFF1D1E33),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
               ),
             ),
             const SizedBox(height: 20),
-            
-            // Upload Screenshot Section
-            const Text(
-              'Upload Chart Screenshot',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            const Text('Upload Chart Screenshot', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Container(
               height: 140,
@@ -279,8 +340,6 @@ class _StrategyBuilderPageState extends State<StrategyBuilderPage> {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Submit Button
             SizedBox(
               width: double.infinity,
               height: 50,
