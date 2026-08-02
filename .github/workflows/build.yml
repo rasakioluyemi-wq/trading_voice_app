@@ -24,16 +24,11 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Clean and Get Dependencies
-        run: |
-          flutter clean
-          flutter pub get
-
-      - name: Generate Android Template
-        run: flutter create . --platforms=android --org com.example --project-name trading_voice_app
+      - name: Install Dependencies
+        run: flutter pub get
 
       - name: Build APK
-        run: flutter build apk --release --verbose
+        run: flutter build apk --release --verbose --no-pub
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
