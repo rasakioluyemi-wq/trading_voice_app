@@ -27,7 +27,7 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Recreate Missing Android Files
+      - name: Generate Android Template
         run: flutter create . --platforms=android --org com.example --project-name trading_voice_app
 
       - name: Build APK
