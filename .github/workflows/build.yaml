@@ -24,11 +24,11 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Generate Android Template
-        run: flutter create . --platforms=android --org com.example --project-name trading_voice_app
-
       - name: Install Dependencies
         run: flutter pub get
+
+      - name: Generate Android Template
+        run: flutter create . --platforms=android --org com.example --project-name trading_voice_app
 
       - name: Build APK
         run: flutter build apk --release
