@@ -31,7 +31,7 @@ jobs:
       run: flutter create . --org com.example --project-name trading_voice_app
 
     - name: Build APK
-      run: flutter build apk --release --verbose
+      run: flutter build apk --release --verbose --info
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
