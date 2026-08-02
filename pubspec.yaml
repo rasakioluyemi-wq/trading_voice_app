@@ -1,6 +1,7 @@
 name: trading_voice_app
-description: A new Flutter project.
+description: A new Flutter project for voice-controlled trading.
 publish_to: 'none'
+
 version: 1.0.0+1
 
 environment:
@@ -9,8 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  web_socket_channel: ^3.0.0
-image_picker: ^1.0.7  
+  image_picker: ^1.0.7
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
