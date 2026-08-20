@@ -26,14 +26,12 @@ jobs:
 
       - name: Install Dependencies
         run: flutter pub get
-        working-directory: trading_voice_app
 
       - name: Build APK
         run: flutter build apk --release
-        working-directory: trading_voice_app
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: trading_voice_app/build/app/outputs/flutter-apk
+          path: build/app/outputs/flutter-apk
