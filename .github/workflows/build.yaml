@@ -7,6 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,16 +28,17 @@ jobs:
           cache: true
 
       - name: Install Dependencies
-        run: cd trading_voice_app && flutter pub get
+        run: flutter pub get
 
       - name: Generate Android Template
-        run: cd trading_voice_app && flutter create . --platforms=android
+        run: flutter create . --platforms=android
 
       - name: Build APK
-        run: cd trading_voice_app && flutter build apk --release
+        run: flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: trading_voice_app/build/app/outputs/flutter-apk
+          path: build/app/outputs/flutter-apk
+          
