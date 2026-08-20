@@ -25,20 +25,16 @@ jobs:
           cache: true
 
       - name: Install Dependencies
-        run: flutter pub get
-        working-directory: trading_voice_app
+        run: cd trading_voice_app && flutter pub get
 
       - name: Generate Android Template
-        run: flutter create . --platforms=android
-        working-directory: trading_voice_app
+        run: cd trading_voice_app && flutter create . --platforms=android
 
       - name: Build APK
-        run: flutter build apk --release
-        working-directory: trading_voice_app
+        run: cd trading_voice_app && flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: trading_voice_app/build/app/outputs/flutter-apk
-          
