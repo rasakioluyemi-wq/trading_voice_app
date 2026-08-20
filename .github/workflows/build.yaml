@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: .
+        working-directory: trading_voice_app
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -40,5 +40,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: build/app/outputs/flutter-apk
+          path: trading_voice_app/build/app/outputs/flutter-apk
+          
           
