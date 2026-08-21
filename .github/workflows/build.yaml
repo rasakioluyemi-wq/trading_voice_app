@@ -11,9 +11,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: List Files (Debug)
-        run: ls -R
-
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
@@ -27,14 +24,19 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Install Dependencies
-        run: flutter pub get
-
-      - name: Build APK
-        run: flutter build apk --release
+      - name: Find Project Directory and Build
+        run: |
+          # Find the directory containing pubspec.yaml automatically
+          PROJECT_DIR=$(dirname $(find . -name "pubspec.yaml" -not -path "*/.*" -print -quit))
+          echo "Found project root at: $PROJECT_DIR"
+          
+          cd "$PROJECT_DIR"
+          
+          flutter pub get
+          flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: build/app/outputs/flutter-apk
+          path: '**/build/app/outputs/flutter-apk/*.apk'
