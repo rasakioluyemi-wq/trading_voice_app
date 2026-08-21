@@ -24,19 +24,23 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Find Project Directory and Build
+      - name: Check or Create Project
         run: |
-          # Find the directory containing pubspec.yaml automatically
-          PROJECT_DIR=$(dirname $(find . -name "pubspec.yaml" -not -path "*/.*" -print -quit))
-          echo "Found project root at: $PROJECT_DIR"
-          
-          cd "$PROJECT_DIR"
-          
-          flutter pub get
-          flutter build apk --release
+          if [ ! -f "pubspec.yaml" ]; then
+            echo "No pubspec.yaml found in root. Creating a new Flutter project..."
+            flutter create . --org com.tradingvoice --project-name trading_voice_app
+          else
+            echo "Found existing pubspec.yaml!"
+          fi
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: '**/build/app/outputs/flutter-apk/*.apk'
+          path: build/app/outputs/flutter-apk/*.apk
